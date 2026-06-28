@@ -147,10 +147,19 @@ print("\nФорма датасету після очищення:", df.shape)
 
 plot_missing_by_location(df, title="Пропуски ПІСЛЯ очищення")
 
+# ***
+tmp = df.groupby("Location").apply(lambda x: x.isna().mean())
+sns.heatmap(tmp, cmap="Blues")
+plt.show()
+# ***
+# Видаляємо ознаки з великою кількістю пропусків (>35%)
+cols_to_drop = ["Sunshine"]
+df = df.drop(columns=cols_to_drop)
+
 
 # Для подальшого аналізу розіб’ємо датасет на окремі вибірки в залежності від типів вхідних даних (числові й категоріальні):
 data_num = df.select_dtypes(include=np.number)
-data_cat = df.select_dtypes(include='object')
+data_cat = df.select_dtypes(include=["object", "string"])
 
 # Розглянемо розподіли числових ознак
 melted = data_num.melt()
@@ -165,4 +174,30 @@ g.map(sns.histplot, 'value')
 g.set_titles(col_template='{col_name}')
 g.tight_layout()
 plt.show()
+
+print("\nЧислові ознаки:", list(data_num.columns))
+print("\nКатегоріальні ознаки:", list(data_cat.columns))
+
+
+# Конвертуємо колонку 'Date' в формат datetime
+df["Date"] = pd.to_datetime(df["Date"], errors="coerce")
+
+# Створюємо нові колонки "Year" та "Month" на основі колонки "Date"
+df["Year"] = df["Date"].dt.year
+df["Month"] = df["Date"].dt.month
+
+# Переміщуємо Year у числові ознаки, Month — у категоріальні
+# Числові ознаки
+data_num = df.select_dtypes(include=[np.number])
+# Категоріальні ознаки
+data_cat = df.select_dtypes(include=["object", "string"])
+
+# Переміщуємо Month у категоріальні
+data_cat["Month"] = df["Month"].astype("category")
+
+# Переміщуємо Year у числові
+data_num["Year"] = df["Year"]
+
+print("\nЧислові ознаки:", list(data_num.columns))
+print("\nКатегоріальні ознаки:", list(data_cat.columns))
 
