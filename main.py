@@ -201,3 +201,37 @@ data_num["Year"] = df["Year"]
 print("\nЧислові ознаки:", list(data_num.columns))
 print("\nКатегоріальні ознаки:", list(data_cat.columns))
 
+# Знаходимо останній рік спостережень
+max_year = df["Year"].max()
+print("\nМаксимальний рік у датасеті:", max_year)
+
+#Створюємо булеві маски для train/test
+
+# Об'єкти з останнього року → тест
+test_mask = df["Year"] == max_year
+
+# Усі інші роки → тренувальна вибірка
+train_mask = df["Year"] < max_year
+
+# Формуємо X_train, X_test, y_train, y_test
+#    таргет — RainTomorrow
+#    фічі — все інше, включно з Year, Month, але без Date (якщо вона тобі вже не потрібна як фіча).
+
+# Таргет
+y = df["RainTomorrow"]
+
+# Фічі (без таргета; Date можна теж прибрати, якщо не використовуєш)
+X = df.drop(columns=["RainTomorrow"])
+
+# Train / Test розбиття за роками
+X_train = X[train_mask]
+y_train = y[train_mask]
+
+X_test = X[test_mask]
+y_test = y[test_mask]
+
+print("\nФорма X_train:", X_train.shape)
+print("Форма y_train:", y_train.shape)
+print("Форма X_test:", X_test.shape)
+print("Форма y_test:", y_test.shape)
+
